@@ -143,8 +143,29 @@ string ZmqMsg::getData()
 void ZmqMsg::setData(const uchar &bytes[])
   {
    intptr_t dest=data();
-   size_t size=size();
-   ArrayToPointer(bytes,dest,(int)size);
+   int msgSize=(int)size();
+   int srcSize=ArraySize(bytes);
+   int copySize=MathMin(msgSize,srcSize);
+
+   if(srcSize!=msgSize)
+     {
+      Debug(StringFormat("ZmqMsg::setData size mismatch (src=%d, msg=%d), data will be truncated/padded",srcSize,msgSize));
+     }
+
+   if(copySize>0)
+     {
+      ArrayToPointer(bytes,dest,copySize);
+     }
+
+   if(msgSize>copySize)
+     {
+      uchar padding[];
+      int paddingSize=msgSize-copySize;
+      ArrayResize(padding,paddingSize);
+      ArrayInitialize(padding,0);
+      ArrayToPointer(padding,dest+copySize,paddingSize);
+      ArrayFree(padding);
+     }
   }
 //+------------------------------------------------------------------+
 //| Wraps zmq_msg_gets: get metadata associated with the msg         |

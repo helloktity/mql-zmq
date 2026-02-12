@@ -41,7 +41,9 @@ intptr_t zmq_z85_encode_compat(uchar &str[],const uchar &data[],size_t size)
 {
   char strChar[];
   UcharToChar(str, strChar);
-  return zmq_z85_encode(strChar, data, size);
+  intptr_t res=zmq_z85_encode(strChar, data, size);
+  CharToUchar(strChar, str);
+  return res;
 }
 
 // Decode data with Z85 encoding. Returns 0(NULL) if failed
@@ -59,7 +61,10 @@ int zmq_curve_keypair_compat(uchar &z85_public_key[],uchar &z85_secret_key[])
   char skChar[];
   UcharToChar(z85_public_key, pkChar);
   UcharToChar(z85_secret_key, skChar);
-  return zmq_curve_keypair(pkChar, skChar);
+  int res=zmq_curve_keypair(pkChar, skChar);
+  CharToUchar(pkChar, z85_public_key);
+  CharToUchar(skChar, z85_secret_key);
+  return res;
 }
 
 // Derive the z85-encoded public key from the z85-encoded secret key
@@ -69,7 +74,9 @@ int zmq_curve_public_compat(uchar &z85_public_key[],const uchar &z85_secret_key[
   char skChar[];
   UcharToChar(z85_public_key, pkChar);
   UcharToChar(z85_secret_key, skChar);
-  return zmq_curve_public(pkChar, skChar);
+  int res=zmq_curve_public(pkChar, skChar);
+  CharToUchar(pkChar, z85_public_key);
+  return res;
 }
 
 //+------------------------------------------------------------------+

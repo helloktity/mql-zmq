@@ -275,9 +275,9 @@ bool Socket::monitor(string addr,int events)
 //+------------------------------------------------------------------+
 bool Socket::proxy(Socket *frontend,Socket *backend,Socket *capture)
   {
-   intptr_t frontend_ref= CheckPointer(frontend)==POINTER_DYNAMIC?frontend.ref():0;
-   intptr_t backend_ref = CheckPointer(backend)==POINTER_DYNAMIC?backend.ref():0;
-   intptr_t capture_ref=CheckPointer(capture)==POINTER_DYNAMIC?capture.ref():0;
+   intptr_t frontend_ref=CheckPointer(frontend)!=POINTER_INVALID?frontend.ref():0;
+   intptr_t backend_ref=CheckPointer(backend)!=POINTER_INVALID?backend.ref():0;
+   intptr_t capture_ref=CheckPointer(capture)!=POINTER_INVALID?capture.ref():0;
    return 0==zmq_proxy(frontend_ref, backend_ref, capture_ref);
   }
 //+------------------------------------------------------------------+
@@ -285,10 +285,10 @@ bool Socket::proxy(Socket *frontend,Socket *backend,Socket *capture)
 //+------------------------------------------------------------------+
 bool Socket::proxySteerable(Socket *frontend,Socket *backend,Socket *capture,Socket *control)
   {
-   intptr_t frontend_ref= CheckPointer(frontend)==POINTER_DYNAMIC?frontend.ref():0;
-   intptr_t backend_ref = CheckPointer(backend)==POINTER_DYNAMIC?backend.ref():0;
-   intptr_t capture_ref=CheckPointer(capture)==POINTER_DYNAMIC?capture.ref():0;
-   intptr_t control_ref=CheckPointer(control)==POINTER_DYNAMIC?control.ref():0;
+   intptr_t frontend_ref=CheckPointer(frontend)!=POINTER_INVALID?frontend.ref():0;
+   intptr_t backend_ref=CheckPointer(backend)!=POINTER_INVALID?backend.ref():0;
+   intptr_t capture_ref=CheckPointer(capture)!=POINTER_INVALID?capture.ref():0;
+   intptr_t control_ref=CheckPointer(control)!=POINTER_INVALID?control.ref():0;
    return 0==zmq_proxy_steerable(frontend_ref, backend_ref, capture_ref, control_ref);
   }
 //+------------------------------------------------------------------+
