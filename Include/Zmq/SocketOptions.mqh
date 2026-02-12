@@ -326,21 +326,58 @@ public:
 //| value beforehand, but the function does not return the correct   |
 //| one, either. So the only option is to guess.                     |
 //|                                                                  |
-//| Here we adopt the solution of the Java binding. We just guess    |
-//| that the length of a NULL-terminated string option is less than  |
-//| 1024. So hopefully, it is the case.                              |
+//| Here we start from a guessed length and retry with larger buffers|
+//| when no trailing null is observed, up to a reasonable limit.     |
 //+------------------------------------------------------------------+
 bool SocketOptions::getStringOption(int option,string &value,size_t length)
   {
-   uchar buf[];
-   ArrayResize(buf,(int)length);
-   bool res=getOption(option,buf,length);
-   if(res)
+   const int MAX_TRY_SIZE=65536;
+   bool res=false;
+
+   while((int)length<=MAX_TRY_SIZE)
      {
-      value=StringFromUtf8(buf);
+      uchar buf[];
+      ArrayResize(buf,(int)length);
+
+      size_t actualLength=length;
+      res=getOption(option,buf,actualLength);
+      if(!res)
+        {
+         ArrayFree(buf);
+         return false;
+        }
+
+      // If the value is shorter than our buffer, or we can find a
+      // null terminator within current buffer, we consider it complete.
+      bool hasTerminator=(actualLength<length);
+      if(!hasTerminator)
+        {
+         int scanLen=(int)length;
+         for(int i=0; i<scanLen; i++)
+           {
+            if(buf[i]==0)
+              {
+               hasTerminator=true;
+               break;
+              }
+           }
+        }
+
+      if(hasTerminator)
+        {
+         value=StringFromUtf8(buf);
+         ArrayFree(buf);
+         return true;
+        }
+
+      ArrayFree(buf);
+      length*=2;
      }
-   ArrayFree(buf);
-   return res;
+
+   // Last fallback: keep behavior deterministic even when option
+   // appears to return a non-terminated payload within retry limit.
+   value="";
+   return false;
   }
 //+------------------------------------------------------------------+
 //| The ending means that the converted buffer contains the ending   |
